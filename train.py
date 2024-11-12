@@ -67,7 +67,7 @@ def train_model():
 
 
 def fine_tune_model():
-    cfg = setup_cfg('model_5.3', base_lr=0.0001, max_iter=1000, pretrained_weights="./output/model_5.2/model_final.pth", num_classes=2)
+    cfg = setup_cfg('model_5.3', base_lr=0.00012, max_iter=2000, pretrained_weights="./output/model_5.2/model_final.pth", num_classes=2)
     trainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=True)  # Установлено resume=True, чтобы продолжить обучение
     trainer.train()
