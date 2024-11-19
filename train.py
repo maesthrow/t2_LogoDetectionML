@@ -1,7 +1,6 @@
 import cv2
 
 import detectron2
-from custom_trainer import CustomTrainer
 from detectron2.engine import DefaultTrainer, DefaultPredictor
 from detectron2.config import get_cfg, CfgNode
 from detectron2.data.datasets import register_coco_instances
@@ -12,7 +11,7 @@ import os
 from detectron2.utils.visualizer import Visualizer, ColorMode
 
 # Путь к набору данных для обучения
-dataset_path = "D:\\dev\\aston\\t2\\logo_detection\\marked"
+dataset_path = "C:\\main\\t2\\logo_detection\\marked"
 train_json = os.path.join(dataset_path, "train\\result.json")  # Файл аннотаций
 train_images = os.path.join(dataset_path, "train")  # Папка с изображениями
 val_json = os.path.join(dataset_path, "val\\result.json")
@@ -48,17 +47,20 @@ def setup_cfg(model_name, base_lr=0.00025, max_iter=1000, num_classes=1, pretrai
     cfg.DATASETS.TEST = ("logo_val",)
     cfg.DATALOADER.NUM_WORKERS = 12
     cfg.MODEL.WEIGHTS = pretrained_weights if pretrained_weights else detectron2.model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
-    cfg.SOLVER.IMS_PER_BATCH = 8
+    cfg.SOLVER.IMS_PER_BATCH = 4
     cfg.SOLVER.BASE_LR = base_lr  # Установлен более низкий learning rate
     cfg.SOLVER.MAX_ITER = max_iter  # Меньшее количество итераций для дотренировки
 
-    cfg.SOLVER.WARMUP_ITERS = 1000
+    cfg.SOLVER.WARMUP_ITERS = 500
     cfg.SOLVER.WARMUP_FACTOR = 0.001
     cfg.SOLVER.STEPS = (int(max_iter * 0.6), int(max_iter * 0.8))
     cfg.SOLVER.GAMMA = 0.1
 
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes  # Количество классов: "старый логотип" и "новый логотип"
+
+    cfg.MODEL.DEVICE = "cuda"
+
     cfg.OUTPUT_DIR = f"./output/{model_name}"
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
@@ -66,14 +68,14 @@ def setup_cfg(model_name, base_lr=0.00025, max_iter=1000, num_classes=1, pretrai
 
 
 def train_model():
-    cfg = setup_cfg('model_4', base_lr=0.0002, max_iter=2000, num_classes=1)
+    cfg = setup_cfg('model_t', base_lr=0.00025, max_iter=2000, num_classes=1)
     trainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=False)
     trainer.train()
 
 
 def fine_tune_model():
-    cfg = setup_cfg('model_4.3', base_lr=0.0002, max_iter=15000, pretrained_weights="./output/model_4.2/model_final.pth", num_classes=1)
+    cfg = setup_cfg('model_t.3', base_lr=0.00005, max_iter=1000, pretrained_weights="./output/model_t.2/model_final.pth", num_classes=1)
     trainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=True)  # Установлено resume=True, чтобы продолжить обучение
     trainer.train()
