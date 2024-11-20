@@ -17,3 +17,7 @@ termcolor~=2.5.0
 cloudpickle~=3.1.0
 scipy~=1.14.1
 albumentations~=1.4.21
+detectron2~=0.6
+python-dotenv~=1.0.1
+psutil~=6.1.0
+ultralytics~=8.3.34

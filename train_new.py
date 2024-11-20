@@ -1,4 +1,5 @@
 import cv2
+from dotenv import load_dotenv
 
 import detectron2
 from detectron2.checkpoint import DetectionCheckpointer
@@ -13,8 +14,9 @@ import os
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.utils.visualizer import Visualizer, ColorMode
 
+load_dotenv()
 # Путь к набору данных для обучения
-dataset_path = "C:\\main\\t2\\logo_detection\\marked\\tele2_dataset_3"
+dataset_path = os.path.join(os.getenv("DATASET_PATH_BASE"), "marked\\tele2_dataset_3")
 train_json = os.path.join(dataset_path, "annotations\\instances_Train.json")  # Файл аннотаций
 train_images = os.path.join(dataset_path, "images\\Train")  # Папка с изображениями
 val_json = os.path.join(dataset_path, "annotations\\instances_Validation.json")
@@ -68,12 +70,15 @@ def setup_cfg_mask(model_name, base_lr=0.00025, max_iter=1000, num_classes=1, pr
     cfg.MODEL.WEIGHTS = pretrained_weights if pretrained_weights else detectron2.model_zoo.get_checkpoint_url(
         "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml")
 
+    cfg.MODEL.DEVICE = "cuda"
+    cfg.MODEL.MASK_ON = True  # Включаем поддержку масок (полигоны)
+
     # Уменьшение размера батча для экономии памяти
-    cfg.SOLVER.IMS_PER_BATCH = 4
+    cfg.SOLVER.IMS_PER_BATCH = 8
     cfg.SOLVER.BASE_LR = base_lr
     cfg.SOLVER.MAX_ITER = max_iter
 
-    cfg.SOLVER.WARMUP_ITERS = 1000
+    cfg.SOLVER.WARMUP_ITERS = 500
     cfg.SOLVER.WARMUP_FACTOR = 0.001
     cfg.SOLVER.STEPS = (int(max_iter * 0.5), int(max_iter * 0.75))
     cfg.SOLVER.GAMMA = 0.1
@@ -84,8 +89,10 @@ def setup_cfg_mask(model_name, base_lr=0.00025, max_iter=1000, num_classes=1, pr
     # Включаем AMP для ускорения и экономии памяти
     cfg.SOLVER.AMP.ENABLED = True
 
-    cfg.MODEL.DEVICE = "cuda"
-    cfg.MODEL.MASK_ON = True  # Включаем поддержку масок (полигоны)
+    # Включаем Focal Loss для повышения устойчивости к ложным срабатываниям
+    cfg.MODEL.ROI_HEADS.LOSS_TYPE = "FocalLoss"
+    cfg.MODEL.ROI_HEADS.FOCAL_LOSS_GAMMA = 2.0  # Параметр gamma для Focal Loss
+    cfg.MODEL.ROI_HEADS.FOCAL_LOSS_ALPHA = 0.25  # Параметр alpha для Focal Loss
 
     # Указываем папку для сохранения модели
     cfg.OUTPUT_DIR = f"./output_new/{model_name}"
@@ -107,10 +114,10 @@ def train_model_new():
 
 def fine_tune_model_new():
     cfg = setup_cfg_mask(
-        'model_resnet101.2',
-        base_lr=0.00005,
-        max_iter=1500,
-        pretrained_weights="./output_new/model_resnet101/model_final.pth",
+        'model_resnet101.3',
+        base_lr=0.00015,
+        max_iter=1000,
+        pretrained_weights="./output_new/model_resnet101.2/model_final.pth",
         num_classes=1
     )
     trainer = DefaultTrainer(cfg)
