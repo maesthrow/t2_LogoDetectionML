@@ -13,7 +13,7 @@ from detectron2.utils.visualizer import Visualizer, ColorMode
 
 load_dotenv()
 # Путь к набору данных для обучения
-dataset_path = os.path.join(os.getenv("DATASET_PATH_BASE"), "marked")
+dataset_path = os.getenv("DATASET_PATH_BASE")
 train_json = os.path.join(dataset_path, "train\\result.json")  # Файл аннотаций
 train_images = os.path.join(dataset_path, "train")  # Папка с изображениями
 val_json = os.path.join(dataset_path, "val\\result.json")

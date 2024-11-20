@@ -16,7 +16,7 @@ from detectron2.utils.visualizer import Visualizer, ColorMode
 
 load_dotenv()
 # Путь к набору данных для обучения
-dataset_path = os.path.join(os.getenv("DATASET_PATH_BASE"), "marked\\tele2_dataset_3")
+dataset_path = os.path.join(os.getenv("DATASET_PATH_BASE"), "tele2_dataset_3")
 train_json = os.path.join(dataset_path, "annotations\\instances_Train.json")  # Файл аннотаций
 train_images = os.path.join(dataset_path, "images\\Train")  # Папка с изображениями
 val_json = os.path.join(dataset_path, "annotations\\instances_Validation.json")
@@ -115,8 +115,8 @@ def train_model_new():
 def fine_tune_model_new():
     cfg = setup_cfg_mask(
         'model_resnet101.3',
-        base_lr=0.00015,
-        max_iter=1000,
+        base_lr=0.0001,
+        max_iter=2400,
         pretrained_weights="./output_new/model_resnet101.2/model_final.pth",
         num_classes=1
     )
