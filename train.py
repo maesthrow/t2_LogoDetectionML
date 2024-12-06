@@ -45,18 +45,18 @@ def setup_cfg(model_name, base_lr=0.00025, max_iter=1000, num_classes=1, pretrai
     cfg.merge_from_file(detectron2.model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
     cfg.DATASETS.TRAIN = ("logo_train",)
     cfg.DATASETS.TEST = ("logo_val",)
-    cfg.DATALOADER.NUM_WORKERS = 12
+    cfg.DATALOADER.NUM_WORKERS = 10
     cfg.MODEL.WEIGHTS = pretrained_weights if pretrained_weights else detectron2.model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
-    cfg.SOLVER.IMS_PER_BATCH = 4
+    cfg.SOLVER.IMS_PER_BATCH = 8
     cfg.SOLVER.BASE_LR = base_lr  # Установлен более низкий learning rate
     cfg.SOLVER.MAX_ITER = max_iter  # Меньшее количество итераций для дотренировки
 
-    cfg.SOLVER.WARMUP_ITERS = 500
+    cfg.SOLVER.WARMUP_ITERS = 300
     cfg.SOLVER.WARMUP_FACTOR = 0.001
     cfg.SOLVER.STEPS = (int(max_iter * 0.6), int(max_iter * 0.8))
     cfg.SOLVER.GAMMA = 0.1
 
-    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
+    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 256
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes  # Количество классов: "старый логотип" и "новый логотип"
 
     cfg.MODEL.DEVICE = "cuda"
@@ -75,7 +75,7 @@ def train_model():
 
 
 def fine_tune_model():
-    cfg = setup_cfg('model_t.3', base_lr=0.00005, max_iter=1000, pretrained_weights="./output/model_t.2/model_final.pth", num_classes=1)
+    cfg = setup_cfg('model_5.6', base_lr=0.0001, max_iter=2000, pretrained_weights="./output/model_5.5/model_final.pth", num_classes=2)
     trainer = DefaultTrainer(cfg)
     trainer.resume_or_load(resume=True)  # Установлено resume=True, чтобы продолжить обучение
     trainer.train()
