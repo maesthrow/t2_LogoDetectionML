@@ -1,4 +1,5 @@
 import cv2
+from dotenv import load_dotenv
 
 import detectron2
 from detectron2.engine import DefaultTrainer, DefaultPredictor
@@ -10,8 +11,9 @@ import os
 
 from detectron2.utils.visualizer import Visualizer, ColorMode
 
+load_dotenv()
 # Путь к набору данных для обучения
-dataset_path = "C:\\main\\t2\\logo_detection\\marked"
+dataset_path = os.getenv("DATASET_PATH_BASE")
 train_json = os.path.join(dataset_path, "train\\result.json")  # Файл аннотаций
 train_images = os.path.join(dataset_path, "train")  # Папка с изображениями
 val_json = os.path.join(dataset_path, "val\\result.json")
